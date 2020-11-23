@@ -7,7 +7,7 @@ services:
       target: dev
     volumes:
       - ./src:/src
-    command: npm start
+    command: npm run watch
     ports:
       - "3000:3000"
     environment:
