@@ -4,9 +4,19 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
+var MySQLStore = require('express-mysql-session')(session);
 var flash = require('connect-flash');
 var passport = require('passport');
 var User = require("./model/user");
+
+const dbConfig = require("./config/db");
+var sessionStore = new MySQLStore({
+    host: dbConfig.HOST,
+    port: dbConfig.PORT,
+    user: dbConfig.USER,
+    password: dbConfig.PASSWORD,
+    database: dbConfig.DB
+});
 
 passport.serializeUser(function (user, done) {
     done(null, user.id);
@@ -34,6 +44,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(session({
     secret: 'somesecret',
+    store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
