@@ -1,9 +1,10 @@
 var express = require('express');
 var router = express.Router();
 const users = require("../controller/user");
+const { ensureAuthenticated } = require("../middleware/auth");
 
 /* GET users listing. */
-router.get('/', function (req, res, next) {
+router.get('/', ensureAuthenticated, function (req, res, next) {
     users.findAll(req, res);
 });
 
