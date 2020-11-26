@@ -24,7 +24,7 @@ User.create = (user, result) => {
 };
 
 User.findById = (UserId, result) => {
-    db.query(`SELECT * FROM users WHERE id = ${UserId}`, (err, res) => {
+    db.query(`SELECT id,email,first_name,middle_name,last_name FROM users WHERE id = ${UserId}`, (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -62,7 +62,7 @@ User.findByEmail = (email, result) => {
 };
 
 User.getAll = result => {
-    db.query("SELECT * FROM users", (err, res) => {
+    db.query("SELECT id,email,first_name,middle_name,last_name FROM users", (err, res) => {
         if (err) {
             console.log("error: ", err);
             result(null, err);

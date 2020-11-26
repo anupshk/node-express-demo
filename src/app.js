@@ -17,6 +17,15 @@ var sessionStore = new MySQLStore({
     password: dbConfig.PASSWORD,
     database: dbConfig.DB
 });
+const sessionMiddleware = session({
+    secret: 'somesecret',
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        maxAge: 30 * 24 * 60 * 60 * 1000
+    }
+});
 
 passport.serializeUser(function (user, done) {
     done(null, user.id);
@@ -42,23 +51,45 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(session({
-    secret: 'somesecret',
-    store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        maxAge: 30 * 24 * 60 * 60 * 1000
-    }
-}));
+app.use(sessionMiddleware);
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/assets', [
     express.static(__dirname + '/node_modules/jquery/dist/'),
-    express.static(__dirname + '/node_modules/bootstrap/dist/js/')
+    express.static(__dirname + '/node_modules/bootstrap/dist/js/'),
+    express.static(__dirname + '/node_modules/socket.io/client-dist/')
 ]);
+
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
+
+// convert a connect middleware to a Socket.IO middleware
+const wrap = middleware => (socket, next) => middleware(socket.request, {}, next);
+
+io.use(wrap(sessionMiddleware));
+io.use(wrap(passport.initialize()));
+io.use(wrap(passport.session()));
+
+io.use((socket, next) => {
+    console.log("socket user", socket.request.user);
+    if (socket.request.user) {
+        next();
+    } else {
+        next(new Error('unauthorized'))
+    }
+});
+
+io.on("connection", function (socket) {
+    socket.join("general");
+    console.log("New connection", socket.id);
+});
+
+app.use(function (req, res, next) {
+    res.io = io;
+    next();
+});
 
 app.use(function (req, res, next) {
     res.locals.user = req.user;
@@ -87,4 +118,4 @@ app.use(function (err, req, res, next) {
     res.render('error');
 });
 
-module.exports = app;
+module.exports = { app: app, server: server };

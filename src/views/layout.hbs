@@ -52,6 +52,16 @@
     <!-- Javascripts -->
     <script src="/assets/jquery.min.js"></script>
     <script src="/assets/bootstrap.min.js"></script>
+    <script src="/assets/socket.io.js"></script>
+    <script>
+        var socket = io('//localhost:10004');
+        socket.on('userLogin', function (data) {
+            console.log('userLogin', data);
+        });
+        socket.on('userLogout', function (data) {
+            console.log('userLogout', data);
+        });
+    </script>
 </body>
 
 </html>

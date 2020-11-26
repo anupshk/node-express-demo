@@ -14,7 +14,11 @@ passport.use(new LocalStrategy(
     function (req, username, password, done) {
         User.findByEmail(username, (err, user) => {
             if (err) {
-                return done(err);
+                if (err.kind && err.kind == "not_found") {
+                    return done(null, false, { message: 'Incorrect credential.' });
+                } else {
+                    return done(err);
+                }
             }
             if (!user) {
                 return done(null, false, { message: 'Incorrect credential.' });
@@ -43,11 +47,13 @@ router.post('/login',
     ),
     (req, res) => {
         console.log("user", req.user);
+        res.io.to("general").emit("userLogin", req.user);
         res.redirect('/');
     }
 );
 
 router.get('/logout', function (req, res) {
+    res.io.to("general").emit("userLogout", req.user);
     req.logout();
     res.redirect('/');
 });

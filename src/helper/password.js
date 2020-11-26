@@ -5,7 +5,12 @@ function getHashedPassword(pwd) {
 }
 
 function validPassword(plain, hash) {
-    return bcrypt.compareSync(plain, hash);
+    try {
+        return bcrypt.compareSync(plain, hash);
+    } catch (e) {
+        console.log(e);
+        return false;
+    }
 }
 
 module.exports = {
