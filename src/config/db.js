@@ -1,7 +1,4 @@
-module.exports = {
-    HOST: "mysql",
-    PORT: "3306",
-    USER: "root",
-    PASSWORD: "rootpassword",
-    DB: "nodeweb"
-};
+const env = process.env.NODE_ENV || 'development';
+const config = require('./config.json')[env];
+
+module.exports = config;

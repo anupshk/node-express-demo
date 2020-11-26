@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
-var User = require("../model/user");
+//var User = require("../model/user");
+const { User } = require("../models");
 var passport = require('passport'),
     LocalStrategy = require('passport-local').Strategy;
 const { validPassword } = require("../helper/password");
@@ -12,22 +13,41 @@ passport.use(new LocalStrategy(
         passReqToCallback: true,
     },
     function (req, username, password, done) {
-        User.findByEmail(username, (err, user) => {
-            if (err) {
-                if (err.kind && err.kind == "not_found") {
-                    return done(null, false, { message: 'Incorrect credential.' });
-                } else {
-                    return done(err);
+        User
+            .findOne({
+                where: {
+                    email: username
                 }
-            }
-            if (!user) {
+            })
+            .then(user => {
+                if (!user) {
+                    return done(null, false, { message: 'Incorrect credential.' });
+                }
+                if (!validPassword(password, user.password)) {
+                    return done(null, false, { message: 'Incorrect credential.' });
+                }
+                return done(null, user.get());
+            })
+            .catch(e => {
+                console.log("error retrieving user", e);
                 return done(null, false, { message: 'Incorrect credential.' });
-            }
-            if (!validPassword(password, user.password)) {
-                return done(null, false, { message: 'Incorrect credential.' });
-            }
-            return done(null, user);
-        })
+            })
+        // User.findByEmail(username, (err, user) => {
+        //     if (err) {
+        //         if (err.kind && err.kind == "not_found") {
+        //             return done(null, false, { message: 'Incorrect credential.' });
+        //         } else {
+        //             return done(err);
+        //         }
+        //     }
+        //     if (!user) {
+        //         return done(null, false, { message: 'Incorrect credential.' });
+        //     }
+        //     if (!validPassword(password, user.password)) {
+        //         return done(null, false, { message: 'Incorrect credential.' });
+        //     }
+        //     return done(null, user);
+        // })
     }
 ));
 
@@ -55,7 +75,9 @@ router.post('/login',
 router.get('/logout', function (req, res) {
     res.io.to("general").emit("userLogout", req.user);
     req.logout();
-    res.redirect('/');
+    req.session.destroy(function (err) {
+        res.redirect('/');
+    });
 });
 
 module.exports = router;

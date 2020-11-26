@@ -12,6 +12,6 @@ CMD ["node", "bin/www"]
 
 FROM base as dev
 ENV NODE_ENV=development
-RUN npm install -g nodemon && npm install
+RUN npm install -g nodemon sequelize-cli && npm install
 COPY ./src/* /src/
 CMD ["nodemon", "bin/www"]

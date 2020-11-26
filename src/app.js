@@ -7,15 +7,15 @@ var session = require('express-session');
 var MySQLStore = require('express-mysql-session')(session);
 var flash = require('connect-flash');
 var passport = require('passport');
-var User = require("./model/user");
+const { User } = require("./models");
 
 const dbConfig = require("./config/db");
 var sessionStore = new MySQLStore({
-    host: dbConfig.HOST,
-    port: dbConfig.PORT,
-    user: dbConfig.USER,
-    password: dbConfig.PASSWORD,
-    database: dbConfig.DB
+    host: dbConfig.host,
+    port: dbConfig.port,
+    user: dbConfig.username,
+    password: dbConfig.password,
+    database: dbConfig.database
 });
 const sessionMiddleware = session({
     secret: 'somesecret',
@@ -32,9 +32,15 @@ passport.serializeUser(function (user, done) {
 });
 
 passport.deserializeUser(function (id, done) {
-    User.findById(id, function (err, user) {
-        done(err, user);
-    });
+    User.findByPk(id)
+        .then(user => {
+            if (user) {
+                done(null, user.get());
+            } else {
+                done(user.errors, null);
+            }
+        })
+        .catch(e => done(e, null));
 });
 
 var indexRouter = require('./routes/index');
