@@ -6,6 +6,7 @@ var logger = require('morgan');
 var session = require('express-session');
 var MySQLStore = require('express-mysql-session')(session);
 var flash = require('connect-flash');
+var fileupload = require('express-fileupload');
 var passport = require('passport');
 const { User } = require("./models");
 
@@ -46,6 +47,7 @@ passport.deserializeUser(function (id, done) {
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
+var userRouter = require('./routes/user');
 
 var app = express();
 
@@ -67,6 +69,10 @@ app.use('/assets', [
     express.static(__dirname + '/node_modules/bootstrap/dist/js/'),
     express.static(__dirname + '/node_modules/socket.io/client-dist/')
 ]);
+app.use(fileupload({
+    useTempFiles: true,
+    tempFileDir: __dirname + '/tmp/'
+}));
 
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
@@ -98,6 +104,7 @@ app.use(function (req, res, next) {
 });
 
 app.use(function (req, res, next) {
+    res.locals.title = "Expresso";
     res.locals.user = req.user;
     next();
 });
@@ -105,6 +112,7 @@ app.use(function (req, res, next) {
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
+app.use('/user', userRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

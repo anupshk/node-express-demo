@@ -27,7 +27,9 @@ module.exports = {
                 type: Sequelize.STRING
             },
             registered_at: {
-                type: Sequelize.DATE
+                allowNull: false,
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
             },
             status: {
                 type: Sequelize.INTEGER
