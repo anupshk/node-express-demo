@@ -23,7 +23,7 @@ router.post('/profile/edit', ensureAuthenticated, function (req, res, next) {
     if (req.files && req.files.image) {
         let image = req.files.image;
         let userImage = req.user.uid + '.jpg';
-        userData.image = userImage;
+        userData = { ...userData, image: userImage };
         let userDir = getUserDirectory(req.user);
         if (!fs.existsSync(userDir)) {
             fs.mkdirSync(userDir);
@@ -37,6 +37,7 @@ router.post('/profile/edit', ensureAuthenticated, function (req, res, next) {
             }
         });
     }
+    console.log("update user", userData);
     User
         .update(userData, {
             where: {

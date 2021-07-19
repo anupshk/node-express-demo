@@ -8,9 +8,12 @@ services:
     container_name: nodeweb_web
     volumes:
       - ./src:/src
+      - /src/node_modules
     command: npm run watch
     ports:
       - "10004:3000"
+    depends_on:
+      - "mysql"
     environment:
       NODE_ENV: development
     networks:
@@ -27,6 +30,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=rootpassword
     volumes:
+      - ./.docker/mysql/init:/docker-entrypoint-initdb.d
       - nodeweb_data:/var/lib/mysql
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -43,6 +47,8 @@ services:
       - .docker/phpmyadmin/php.ini:/usr/local/etc/php/php.ini
     ports:
       - 10005:80
+    depends_on:
+      - "mysql"
     networks:
       - backend
 networks:

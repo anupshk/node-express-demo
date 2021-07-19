@@ -6,7 +6,9 @@ const { ensureAuthenticated } = require("../middleware/auth");
 
 /* GET users listing. */
 router.get('/', ensureAuthenticated, function (req, res, next) {
-    User.findAll().then(users => res.json(users));
+    User.findAll({
+        attributes: ['uid', 'image', 'first_name', 'middle_name', 'last_name']
+    }).then(users => res.json(users));
 });
 
 module.exports = router;
